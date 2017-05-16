@@ -1,5 +1,3 @@
-import nltk
-import fileinput
 from main import function
 
 if __name__ == '__main__':
