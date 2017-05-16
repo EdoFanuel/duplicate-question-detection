@@ -12,7 +12,7 @@ def readCSV(srcPath) -> list:
         result.append(entry)
     return result
 
-def writeCSV(content, destPath):
+def writeCSV(headings, content, destPath):
     writer = csv.writer(open(destPath, encoding="UTF-8"))
 
 def similarity(text_01, text_02) -> float:

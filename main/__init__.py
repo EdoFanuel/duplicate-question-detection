@@ -1,7 +1,9 @@
 import nltk
+import fileinput
 from main import function
 
 if __name__ == '__main__':
-    trainingSet = function.readCSV("D:/Miscellanous/Competitions/Quora Question Pairs/train.csv");
+    path = input("Training dataset path: ")
+    trainingSet = function.readCSV(path);
     for line in trainingSet:
         print(line)
