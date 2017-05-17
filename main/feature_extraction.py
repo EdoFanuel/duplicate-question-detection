@@ -4,6 +4,7 @@ import datetime
 import operator
 import sklearn
 import nltk
+from nltk.corpus import stopwords, wordnet
 import matplotlib.pyplot as plt
 import pylab
 
