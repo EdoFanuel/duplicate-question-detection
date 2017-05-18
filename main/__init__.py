@@ -4,6 +4,6 @@ import main.feature_extraction as f_ext
 if __name__ == '__main__':
     path = input("Training dataset path: ")
     train_set = fmgmt.read_csv(path)
-    for text in train_set['question1'][:20]:
-        print(f_ext.word_tokenize(text), text)
+    word_dist = f_ext.word_distribution(train_set["question1"].tolist() + train_set["question2"].tolist())
+    print(word_dist)
 
