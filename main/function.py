@@ -1,4 +1,5 @@
 import nltk
+import math
 
 
 def token_extraction(text_1: str, text_2: str, extract_method: callable):
@@ -17,7 +18,7 @@ def cosine_similarity(vector_1: list, vector_2: list) -> float:
     vect_product = [a * b for a, b in zip(vector_1, vector_2)]
     sq_vect_1 = [a ** 2 for a in vector_1]
     sq_vect_2 = [a ** 2 for a in vector_2]
-    return sum(vect_product) / (sum(sq_vect_1) * sum(sq_vect_2))
+    return sum(vect_product) / math.sqrt(sum(sq_vect_1) * sum(sq_vect_2))
 
 
 def intersect(x: list, y: list) -> list:
