@@ -21,6 +21,10 @@ def cosine_similarity(vector_1: list, vector_2: list) -> float:
     return sum(vect_product) / math.sqrt(sum(sq_vect_1) * sum(sq_vect_2))
 
 
+def length_norm(data_1, data_2):
+    return math.sqrt(len(data_1) * len(data_2))
+
+
 def intersect(x: list, y: list) -> list:
     return list(set(x) & set(y))
 

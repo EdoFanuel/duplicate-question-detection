@@ -70,6 +70,39 @@ def cosine_lemma(text_1: str, text_2: str) -> float:
     return func.cosine_similarity(vector_1, vector_2)
 
 
+def shared_token(text_1: str, text_2: str) -> int:
+    return len(func.token_extraction(text_1, text_2, func.intersect))
+
+
+def shared_pos(text_1: str, text_2: str) -> int:
+    return len(func.pos_tag_extraction(text_1, text_2, func.intersect))
+
+
+def shared_lemma(text_1: str, text_2: str) -> int:
+    pos = func.pos_tag_extraction(text_1, text_2, lambda x, y: {"pos_1": x, "pos_2": y})
+    lemmatizer = WordNetLemmatizer()
+
+    def convert(treebank_tag: str) -> str:
+        if treebank_tag.startswith('J'):
+            return wordnet.ADJ
+        elif treebank_tag.startswith('V'):
+            return wordnet.VERB
+        elif treebank_tag.startswith('N'):
+            return wordnet.NOUN
+        elif treebank_tag.startswith('R'):
+            return wordnet.ADV
+        else:
+            return wordnet.NOUN
+
+    lemma_1 = [lemmatizer.lemmatize(word, pos=convert(tag)) for word, tag in pos["pos_1"]]
+    lemma_2 = [lemmatizer.lemmatize(word, pos=convert(tag)) for word, tag in pos["pos_2"]]
+    return len(func.intersect(lemma_1, lemma_2))
+
+
+def shared_proper_noun(text_1: str, text_2: str) -> int:
+    return len([word for word, tag in func.pos_tag_extraction(text_1, text_2, func.intersect) if tag.startswith("NNP")])
+
+
 def word_distribution(corpus: list) -> list:
     casted_series = pd.Series(corpus).astype(str)
     words = (" ".join(casted_series)).lower().split()
