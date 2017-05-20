@@ -6,7 +6,7 @@ import main.function as funct
 if __name__ == '__main__':
     path = "D:\\Miscellanous\\Competitions\\Quora Question Pairs\\train.csv"
     start_index = 0
-    limit = 20
+    limit = 100
     train_set = fmgmt.read_csv(path)[start_index: start_index + limit]
 
     result = []
@@ -30,5 +30,20 @@ if __name__ == '__main__':
         result.append(data)
         i += 1
         print("Progress: {0} / {1}".format(i, len(train_set)))
+
     project_root = "D:\\Miscellanous\\Competitions\\Quora Question Pairs\\duplicate-question-detection\\"
-    fmgmt.write_csv(result, project_root, "result\\{0}.csv".format(dt.now().strftime("%Y-%m-%d %H-%M-%S")))
+    file_name = "result\\{0}.csv".format(dt.now().strftime("%Y-%m-%d %H-%M-%S"))
+    columns = [
+        "q1",
+        "q2",
+        "is_duplicate",
+        "shared_token",
+        "shared_pos",
+        "shared_lemma",
+        "shared_proper_noun",
+        "token_distance",
+        "char_length_diff",
+        "leven_dist",
+        "cosine_lemma"
+    ]
+    fmgmt.write_csv(result, project_root, file_name, columns=columns)
