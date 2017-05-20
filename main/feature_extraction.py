@@ -9,7 +9,7 @@ from nltk.corpus import stopwords, wordnet
 from nltk.metrics import *
 import matplotlib.pyplot as plt
 from pylab import plot, show, subplot, specgram, imshow, savefig
-from main import function as funct
+from main import function as func
 
 
 def char_len(text: str) -> int:
@@ -24,8 +24,8 @@ def length_diff(text_1: str, text_2: str) -> int:
     return abs(len(text_1) - len(text_2))
 
 
-def text_distance(text_1: str, text_2: str) -> float:
-    tag_diff = funct.pos_tag_extraction(text_1, text_2, funct.diff_by_list)
+def token_distance(text_1: str, text_2: str) -> float:
+    tag_diff = func.pos_tag_extraction(text_1, text_2, func.diff_by_list)
 
     def avg_min_dist(tokens_1: list, tokens_2: list) -> float:
         total_dist = []
@@ -42,9 +42,13 @@ def text_distance(text_1: str, text_2: str) -> float:
     return avg_min_dist(x_tokens, y_tokens) + avg_min_dist(y_tokens, x_tokens)
 
 
+def edit_distance(text_1: str, text_2: str) -> int:
+    return edit_distance(text_1, text_2)
+
+
 def word_distribution(corpus: list) -> list:
     casted_series = pd.Series(corpus).astype(str)
     words = (" ".join(casted_series)).lower().split()
     counts = Counter(words)
-    result = {(word, count) for word, count in counts.items()}
+    result = {(word, count) for word, count in counts.items() if word not in stopwords.words("english")}
     return sorted(result, key=lambda x: x[1], reverse=True)
