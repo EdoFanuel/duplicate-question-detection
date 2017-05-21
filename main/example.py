@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import pandas as pd
-import xgboost as xgb
 import datetime
 import operator
 from sklearn.model_selection import train_test_split
@@ -22,15 +21,16 @@ def train_xgb(X, y, params):
     print("Will train XGB for {} rounds, RandomSeed: {}".format(ROUNDS, RS))
     x, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=RS)
 
-    xg_train = xgb.DMatrix(x, label=y_train)
-    xg_val = xgb.DMatrix(X_val, label=y_val)
+    # xg_train = xgb.DMatrix(x, label=y_train)
+    # xg_val = xgb.DMatrix(X_val, label=y_val)
 
-    watchlist = [(xg_train, 'train'), (xg_val, 'eval')]
-    return xgb.train(params, xg_train, ROUNDS, watchlist)
+    # watchlist = [(xg_train, 'train'), (xg_val, 'eval')]
+    # return xgb.train(params, xg_train, ROUNDS, watchlist)
 
 
 def predict_xgb(clr, X_test):
-    return clr.predict(xgb.DMatrix(X_test))
+    return 0
+    # return clr.predict(xgb.DMatrix(X_test))
 
 
 def create_feature_map(features):

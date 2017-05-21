@@ -1,7 +1,8 @@
 from collections import Counter
-
-import nltk
 import pandas as pd
+import math
+from textblob import TextBlob as tb
+import nltk
 from nltk.corpus import stopwords, wordnet
 from nltk.metrics import *
 from nltk.stem import WordNetLemmatizer
@@ -9,6 +10,7 @@ from nltk.stem import WordNetLemmatizer
 from main import function as func
 
 lemmatizer = WordNetLemmatizer()
+stops = stopwords.words("english")
 
 
 def convert(treebank_tag: str) -> str:
@@ -28,15 +30,26 @@ def word_distribution(corpus: list) -> list:
     casted_series = pd.Series(corpus).astype(str)
     words = (" ".join(casted_series)).lower().split()
     counts = Counter(words)
-    result = {(word, count) for word, count in counts.items() if word not in stopwords.words("english")}
+    result = {(word, count) for word, count in counts.items()}
+    return sorted(result, key=lambda x: x[1], reverse=True)
+
+
+def token_distribution(corpus: list) -> list:
+    casted_series = pd.Series(corpus).astype(str)
+    words = nltk.word_tokenize(" ".join(casted_series))
+    counts = Counter(words)
+    result = {(word, count) for word, count in counts.items()}
     return sorted(result, key=lambda x: x[1], reverse=True)
 
 
 class FeatureExtraction:
-    def __init__(self, text_1, text_2, word_dist):
+
+    def __init__(self, text_1: str, text_2: str, corpus_blob: list):
         self.data_1 = FeatureExtraction.extract_basic_feature(text_1)
         self.data_2 = FeatureExtraction.extract_basic_feature(text_2)
-        self.word_distribution = word_dist
+        self.blob_1 = tb(text_1)
+        self.blob_2 = tb(text_2)
+        self.corpus_blob = corpus_blob
 
     @staticmethod
     def extract_basic_feature(text: str) -> dict:
@@ -76,8 +89,11 @@ class FeatureExtraction:
         shrd_token = sum(1 for t1, t2 in zip(tokens["token_1"], tokens["token_2"]) if t1 == t2)
         return shrd_token / max(len(tokens["token_1"]), len(tokens["token_2"]))
 
-    def levenshtein_distance(self) -> int:
-        return edit_distance(self.data_1["content"].replace(" ", ""), self.data_2["content"].replace(" ", ""))
+    def norm_levenshtein_distance(self) -> float:
+        chars_1 = self.data_1["content"].replace(" ", "")
+        chars_2 = self.data_2["content"].replace(" ", "")
+        dist = edit_distance(chars_1, chars_2)
+        return dist / max(len(chars_1), len(chars_2))
 
     def cosine_lemma(self) -> float:
         lemma_1 = self.data_1["lemma"]
@@ -89,6 +105,21 @@ class FeatureExtraction:
             vector_1.append(int(word in lemma_1))
             vector_2.append(int(word in lemma_2))
         return func.cosine_similarity(vector_1, vector_2)
+
+    def shared_2gram(self) -> float:
+        ngram_1 = func.n_gram(self.data_1["tokens"])
+        ngram_2 = func.n_gram(self.data_2["tokens"])
+        if len(ngram_1) + len(ngram_2) == 0:
+            return 0
+        else:
+            return len(ngram_1.intersection(ngram_2)) / (len(ngram_1) + len(ngram_2))
+
+    def shared_tf_idf(self):
+        shrd_token = func.intersect(self.data_1["tokens"], self.data_2["tokens"])
+        unique_token = set(self.data_1["tokens"] + self.data_2["tokens"])
+        shrd_tfidf = [func.tfidf(word, self.blob_1, self.corpus_blob) + func.tfidf(word, self.blob_2, self.corpus_blob) for word in shrd_token]
+        total_tfidf = [func.tfidf(word, self.blob_1, self.corpus_blob) + func.tfidf(word, self.blob_2, self.corpus_blob) for word in unique_token]
+        return sum(shrd_tfidf) / sum(total_tfidf)
 
     def shared_token(self) -> int:
         return len(func.intersect(self.data_1["tokens"], self.data_2["tokens"]))
@@ -102,3 +133,16 @@ class FeatureExtraction:
     def shared_proper_noun(self) -> int:
         shrd_pos = func.intersect(self.data_1["pos"], self.data_2["pos"])
         return len([word for word, tag in shrd_pos if tag.startswith("NNP")])
+
+    def diff_uppercase(self):
+        upper_1 = [1 for i in self.data_1["content"] if i.isupper()]
+        upper_2 = [1 for i in self.data_2["content"] if i.isupper()]
+        return abs(sum(upper_1) / len(self.data_1["tokens"]) - sum(upper_2) / len(self.data_2["tokens"]))
+
+    def diff_stopwords(self):
+        stops_1 = [token for token in self.data_1["tokens"] if token in stops]
+        stops_2 = [token for token in self.data_2["tokens"] if token in stops]
+        return abs(len(stops_1) / len(self.data_1["tokens"]) - len(stops_2) / len(self.data_2["tokens"]))
+
+    def diff_tokens(self):
+        return abs(len(self.data_1["tokens"]) - len(self.data_2["tokens"]))

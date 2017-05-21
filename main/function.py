@@ -1,6 +1,8 @@
 import math
 import nltk
 
+inverse_index = {}
+
 
 def token_extraction(text_1: str, text_2: str, extract_method: callable):
     token_1 = nltk.word_tokenize(text_1)
@@ -21,6 +23,10 @@ def cosine_similarity(vector_1: list, vector_2: list) -> float:
     return sum(vect_product) / math.sqrt(sum(sq_vect_1) * sum(sq_vect_2))
 
 
+def n_gram(data: list, n: int = 2) -> set:
+    return set([i for i in zip(*[data[i:] for i in range(n)])])
+
+
 def length_norm(data_1, data_2):
     return math.sqrt(len(data_1) * len(data_2))
 
@@ -39,3 +45,21 @@ def diff_by_list(x: list, y: list) -> dict:
         "x_diff": [data for data in x if data not in common_entry],
         "y_diff": [data for data in y if data not in common_entry]
     }
+
+
+def term_freq(word, blob):
+    return blob.words.count(word) / len(blob.words)
+
+
+def n_containing(word, bloblist):
+    if word not in inverse_index:
+        inverse_index[word] = sum(1 for blob in bloblist if word in blob.words)
+    return inverse_index[word]
+
+
+def inverse_doc_freq(word, bloblist):
+    return math.log(len(bloblist) / (1 + n_containing(word, bloblist)))
+
+
+def tfidf(word, blob, bloblist):
+    return term_freq(word, blob) * inverse_doc_freq(word, bloblist)
