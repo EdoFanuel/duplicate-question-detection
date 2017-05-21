@@ -1,5 +1,7 @@
 import math
 import nltk
+from main import fmgmt
+from datetime import datetime as dt
 
 inverse_index = {}
 
@@ -51,15 +53,31 @@ def term_freq(word, blob):
     return blob.words.count(word) / len(blob.words)
 
 
-def n_containing(word, bloblist):
+def n_containing(word, bloblist) -> float:
     if word not in inverse_index:
         inverse_index[word] = sum(1 for blob in bloblist if word in blob.words)
     return inverse_index[word]
 
 
-def inverse_doc_freq(word, bloblist):
+def inverse_doc_freq(word, bloblist) -> float:
     return math.log(len(bloblist) / (1 + n_containing(word, bloblist)))
 
 
-def tfidf(word, blob, bloblist):
+def tfidf(word, blob, bloblist) -> float:
     return term_freq(word, blob) * inverse_doc_freq(word, bloblist)
+
+
+def generate_idf(dest: str, corpus_blob):
+    inverse_doc_freq = []
+    start_time = dt.now()
+    for sentence in corpus_blob:
+        for word in sentence.words:
+            print(len(inverse_index), word, n_containing(word, corpus_blob))
+    for word, freq in inverse_index:
+        inverse_doc_freq.append({
+            "word": word,
+            "freq": freq,
+        })
+    fmgmt.write_csv(inverse_doc_freq, "..\\dataset\\", dest)
+    time_elapsed = dt.now() - start_time
+    print("IDF generated in {0} seconds".format(time_elapsed.total_seconds()))

@@ -63,8 +63,6 @@ class FeatureExtraction:
     def generate_features(self, id: int, is_duplicate: int) -> dict:
         result = {
             "id": id,
-            "q1": self.data_1["content"],
-            "q2": self.data_2["content"],
             "is_duplicate": is_duplicate,
             "len_text_1": self.len_text_1(),
             "len_text_2": self.len_text_2(),
@@ -79,6 +77,7 @@ class FeatureExtraction:
             "len_token_1": self.len_token_1(),
             "len_token_2": self.len_token_2(),
             "shared_token": self.shared_token(),
+            "shared_token_sqrt": math.sqrt(self.shared_token()),
             "diff_token": self.diff_tokens(),
             "token_hamming": self.token_hamming(),
             "token_dist": self.token_dist(),
@@ -107,7 +106,7 @@ class FeatureExtraction:
         return len(self.data_2["content"])
 
     def len_diff(self) -> int:
-        return abs(self.len_text_1() - len(self.len_text_2()))
+        return abs(self.len_text_1() - self.len_text_2())
 
     def len_char_txt_1(self) -> int:
         return len(self.data_1["content"].replace(" ", ""))
