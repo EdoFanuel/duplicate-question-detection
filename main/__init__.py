@@ -4,36 +4,40 @@ import main.feature_extraction as f_ext
 import main.function as funct
 
 if __name__ == '__main__':
-    path = "D:\\Miscellanous\\Competitions\\Quora Question Pairs\\train.csv"
+    path = "..\\dataset\\train.csv"
     start_index = 0
     limit = 100
     train_set = fmgmt.read_csv(path)[start_index: start_index + limit]
 
     result = []
-    # word_dist = f_ext.word_distribution(train_set["question1"].tolist() + train_set["question2"].tolist())
+    word_dist = f_ext.word_distribution(train_set["question1"].tolist() + train_set["question2"].tolist())
     train_tuple = zip(train_set["question1"], train_set["question2"], train_set["is_duplicate"])
     i = 0
     for q1, q2, is_duplicate in train_tuple:
+        feature = f_ext.FeatureExtraction(q1, q2, word_dist)
+        i += 1
         data = {
+            "id": i,
             "q1": q1,
             "q2": q2,
             "is_duplicate": is_duplicate,
-            "shared_token": f_ext.shared_token(q1, q2),
-            "shared_pos": f_ext.shared_pos(q1, q2),
-            "shared_lemma": f_ext.shared_lemma(q1, q2),
-            "shared_proper_noun": f_ext.shared_proper_noun(q1, q2),
-            "token_distance": f_ext.token_distance(q1, q2),
-            "char_length_diff": f_ext.length_diff(q1, q2),
-            "leven_dist": f_ext.levenshtein_distance(q1.replace(" ", ""), q2.replace(" ", "")),
-            "cosine_lemma": f_ext.cosine_lemma(q1, q2)
+            "shared_token": feature.shared_token(),
+            "shared_pos": feature.shared_pos(),
+            "shared_lemma": feature.shared_lemma(),
+            "shared_proper_noun": feature.shared_proper_noun(),
+            "token_distance": feature.token_distance(),
+            "char_length_diff": feature.length_diff(),
+            "leven_dist": feature.levenshtein_distance(),
+            "cosine_lemma": feature.cosine_lemma(),
+            "token_hamming": feature.token_hamming()
         }
         result.append(data)
-        i += 1
         print("Progress: {0} / {1}".format(i, len(train_set)))
 
     project_root = "D:\\Miscellanous\\Competitions\\Quora Question Pairs\\duplicate-question-detection\\"
     file_name = "result\\{0}.csv".format(dt.now().strftime("%Y-%m-%d %H-%M-%S"))
     columns = [
+        "id",
         "q1",
         "q2",
         "is_duplicate",
@@ -44,6 +48,7 @@ if __name__ == '__main__':
         "token_distance",
         "char_length_diff",
         "leven_dist",
-        "cosine_lemma"
+        "cosine_lemma",
+        "token_hamming"
     ]
     fmgmt.write_csv(result, project_root, file_name, columns=columns)

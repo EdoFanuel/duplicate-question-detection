@@ -1,5 +1,5 @@
-import nltk
 import math
+import nltk
 
 
 def token_extraction(text_1: str, text_2: str, extract_method: callable):
@@ -34,7 +34,8 @@ def diff(x: list, y: list) -> list:
 
 
 def diff_by_list(x: list, y: list) -> dict:
+    common_entry = intersect(x, y)
     return {
-        "x_diff": [data for data in x if data not in intersect(x, y)],
-        "y_diff": [data for data in y if data not in intersect(x, y)]
+        "x_diff": [data for data in x if data not in common_entry],
+        "y_diff": [data for data in y if data not in common_entry]
     }
