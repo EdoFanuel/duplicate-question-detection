@@ -43,7 +43,6 @@ def token_distribution(corpus: list) -> list:
 
 
 class FeatureExtraction:
-
     def __init__(self, text_1: str, text_2: str, corpus_blob: list):
         self.data_1 = FeatureExtraction.extract_basic_feature(text_1)
         self.data_2 = FeatureExtraction.extract_basic_feature(text_2)
@@ -61,11 +60,104 @@ class FeatureExtraction:
         result["lemma"] = [lemmatizer.lemmatize(word, pos=convert(tag)) for word, tag in result["pos"]]
         return result
 
-    def length_diff(self) -> int:
-        return abs(len(self.data_1["content"]) - len(self.data_2["content"]))
+    def generate_features(self, id: int, is_duplicate: int) -> dict:
+        result = {
+            "id": id,
+            "q1": self.data_1["content"],
+            "q2": self.data_2["content"],
+            "is_duplicate": is_duplicate,
+            "len_text_1": self.len_text_1(),
+            "len_text_2": self.len_text_2(),
+            "len_diff": self.len_diff(),
+            "len_char_1": self.len_char_txt_1(),
+            "len_char_2": self.len_char_txt_2(),
+            "diff_char": self.diff_char(),
+            "len_upper_txt_1": self.len_upper_txt_1(),
+            "len_upper_txt_2": self.len_upper_txt_2(),
+            "diff_upper": self.diff_uppercase(),
+            "norm_levenshtein": self.norm_levenshtein_dist(),
+            "len_token_1": self.len_token_1(),
+            "len_token_2": self.len_token_2(),
+            "shared_token": self.shared_token(),
+            "diff_token": self.diff_tokens(),
+            "token_hamming": self.token_hamming(),
+            "token_dist": self.token_dist(),
+            "len_stopword_1": self.len_stopword_txt_1(),
+            "len_stopword_2": self.len_stopword_txt_2(),
+            "diff_stopword": self.diff_stopwords(),
+            "shared_2gram": self.shared_2gram(),
+            "shared_tfidf": self.shared_tf_idf(),
+            "shared_pos": self.shared_pos(),
+            "shared_nnp": self.shared_proper_noun(),
+            "pos_dist": self.pos_dist(),
+            "shared_lemma": self.shared_lemma(),
+            "cosine_lemma": self.cosine_lemma(),
+            "avg_word_1": self.avg_word_len_txt_1(),
+            "avg_word_2": self.avg_word_len_txt_2(),
+            "diff_avg_word_len": self.diff_avg_word_len()
+        }
+        return result
 
-    def token_distance(self) -> float:
-        tag_diff = func.diff_by_list(self.data_1["pos"], self.data_2["pos"])
+
+    # Text-related features
+    def len_text_1(self) -> int:
+        return len(self.data_1["content"])
+
+    def len_text_2(self) -> int:
+        return len(self.data_2["content"])
+
+    def len_diff(self) -> int:
+        return abs(self.len_text_1() - len(self.len_text_2()))
+
+    def len_char_txt_1(self) -> int:
+        return len(self.data_1["content"].replace(" ", ""))
+
+    def len_char_txt_2(self) -> int:
+        return len(self.data_2["content"].replace(" ", ""))
+
+    def diff_char(self) -> int:
+        return abs(self.len_char_txt_1() - self.len_char_txt_2())
+
+    def len_upper_txt_1(self) -> int:
+        return sum([1 for i in self.data_1["content"] if i.isupper()])
+
+    def len_upper_txt_2(self) -> int:
+        return sum([1 for i in self.data_2["content"] if i.isupper()])
+
+    def diff_uppercase(self) -> float:
+        upper_1 = self.len_upper_txt_1()
+        upper_2 = self.len_upper_txt_2()
+        return abs(upper_1 / len(self.data_1["tokens"]) - upper_2 / len(self.data_2["tokens"]))
+
+    def norm_levenshtein_dist(self) -> float:
+        chars_1 = self.data_1["content"].replace(" ", "")
+        chars_2 = self.data_2["content"].replace(" ", "")
+        dist = edit_distance(chars_1, chars_2)
+        return dist / max(len(chars_1), len(chars_2))
+
+    # Token-related features
+    def len_token_1(self) -> int:
+        return len(self.data_1["tokens"])
+
+    def len_token_2(self) -> int:
+        return len(self.data_2["tokens"])
+
+    def shared_token(self) -> int:
+        return len(func.intersect(self.data_1["tokens"], self.data_2["tokens"]))
+
+    def diff_tokens(self):
+        return abs(self.len_token_1() - self.len_token_2())
+
+    def token_hamming(self) -> float:
+        tokens = {
+            "token_1": self.data_1["tokens"],
+            "token_2": self.data_2["tokens"]
+        }
+        shrd_token = sum(1 for t1, t2 in zip(tokens["token_1"], tokens["token_2"]) if t1 == t2)
+        return shrd_token / max(self.len_token_1(), self.len_token_2())
+
+    def token_dist(self) -> float:
+        tag_diff = func.diff_by_list(self.data_1["tokens"], self.data_2["tokens"])
 
         def avg_min_dist(tokens_1: list, tokens_2: list) -> float:
             total_dist = []
@@ -77,23 +169,64 @@ class FeatureExtraction:
                 total_dist.append(min_dist)
             return 0 if len(tokens_1) == 0 else sum(total_dist) / len(tokens_1)
 
-        x_tokens = [word[0] for word in tag_diff["x_diff"]]
-        y_tokens = [word[0] for word in tag_diff["y_diff"]]
+        x_tokens = [word for word in tag_diff["x_diff"]]
+        y_tokens = [word for word in tag_diff["y_diff"]]
         return avg_min_dist(x_tokens, y_tokens) + avg_min_dist(y_tokens, x_tokens)
 
-    def token_hamming(self) -> float:
-        tokens = {
-            "token_1": self.data_1["tokens"],
-            "token_2": self.data_2["tokens"]
-        }
-        shrd_token = sum(1 for t1, t2 in zip(tokens["token_1"], tokens["token_2"]) if t1 == t2)
-        return shrd_token / max(len(tokens["token_1"]), len(tokens["token_2"]))
+    def len_stopword_txt_1(self) -> int:
+        return len([token for token in self.data_1["tokens"] if token in stops])
 
-    def norm_levenshtein_distance(self) -> float:
-        chars_1 = self.data_1["content"].replace(" ", "")
-        chars_2 = self.data_2["content"].replace(" ", "")
-        dist = edit_distance(chars_1, chars_2)
-        return dist / max(len(chars_1), len(chars_2))
+    def len_stopword_txt_2(self) -> int:
+        return len([token for token in self.data_2["tokens"] if token in stops])
+
+    def diff_stopwords(self) -> float:
+        return abs(self.len_stopword_txt_1() / self.len_token_1() - self.len_stopword_txt_2() / self.len_token_2())
+
+    def shared_2gram(self) -> float:
+        ngram_1 = func.n_gram(self.data_1["tokens"])
+        ngram_2 = func.n_gram(self.data_2["tokens"])
+        if len(ngram_1) + len(ngram_2) == 0:
+            return 0
+        else:
+            return len(ngram_1.intersection(ngram_2)) / (len(ngram_1) + len(ngram_2))
+
+    def shared_tf_idf(self) -> float:
+        shrd_token = func.intersect(self.data_1["tokens"], self.data_2["tokens"])
+        unique_token = set(self.data_1["tokens"] + self.data_2["tokens"])
+        shrd_tfidf = [func.tfidf(word, self.blob_1, self.corpus_blob) + func.tfidf(word, self.blob_2, self.corpus_blob)
+                      for word in shrd_token]
+        total_tfidf = [func.tfidf(word, self.blob_1, self.corpus_blob) + func.tfidf(word, self.blob_2, self.corpus_blob)
+                       for word in unique_token]
+        return sum(shrd_tfidf) / sum(total_tfidf)
+
+    # Part-of-speech related features
+    def shared_pos(self) -> int:
+        return len(func.intersect(self.data_1["pos"], self.data_2["pos"]))
+
+    def shared_proper_noun(self) -> int:
+        shrd_pos = func.intersect(self.data_1["pos"], self.data_2["pos"])
+        return len([word for word, tag in shrd_pos if tag.startswith("NNP")])
+
+    def pos_dist(self) -> float:
+        tag_diff = func.diff_by_list(self.data_1["tokens"], self.data_2["tokens"])
+
+        def avg_min_dist(tokens_1: list, tokens_2: list) -> float:
+            total_dist = []
+            for token_1 in tokens_1:
+                token_dist = []
+                for token_2 in tokens_2:
+                    token_dist.append(edit_distance(token_1, token_2))
+                min_dist = 0 if len(token_dist) == 0 else min(token_dist)
+                total_dist.append(min_dist)
+            return 0 if len(tokens_1) == 0 else sum(total_dist) / len(tokens_1)
+
+        x_tokens = [word for word in tag_diff["x_diff"]]
+        y_tokens = [word for word in tag_diff["y_diff"]]
+        return avg_min_dist(x_tokens, y_tokens) + avg_min_dist(y_tokens, x_tokens)
+
+    # Lemma related features
+    def shared_lemma(self) -> int:
+        return len(func.intersect(self.data_1["lemma"], self.data_2["lemma"]))
 
     def cosine_lemma(self) -> float:
         lemma_1 = self.data_1["lemma"]
@@ -106,43 +239,13 @@ class FeatureExtraction:
             vector_2.append(int(word in lemma_2))
         return func.cosine_similarity(vector_1, vector_2)
 
-    def shared_2gram(self) -> float:
-        ngram_1 = func.n_gram(self.data_1["tokens"])
-        ngram_2 = func.n_gram(self.data_2["tokens"])
-        if len(ngram_1) + len(ngram_2) == 0:
-            return 0
-        else:
-            return len(ngram_1.intersection(ngram_2)) / (len(ngram_1) + len(ngram_2))
+    # Combination features
+    def avg_word_len_txt_1(self) -> float:
+        return self.len_text_1() / self.len_token_1()
 
-    def shared_tf_idf(self):
-        shrd_token = func.intersect(self.data_1["tokens"], self.data_2["tokens"])
-        unique_token = set(self.data_1["tokens"] + self.data_2["tokens"])
-        shrd_tfidf = [func.tfidf(word, self.blob_1, self.corpus_blob) + func.tfidf(word, self.blob_2, self.corpus_blob) for word in shrd_token]
-        total_tfidf = [func.tfidf(word, self.blob_1, self.corpus_blob) + func.tfidf(word, self.blob_2, self.corpus_blob) for word in unique_token]
-        return sum(shrd_tfidf) / sum(total_tfidf)
+    def avg_word_len_txt_2(self) -> float:
+        return self.len_text_2() / self.len_token_2()
 
-    def shared_token(self) -> int:
-        return len(func.intersect(self.data_1["tokens"], self.data_2["tokens"]))
+    def diff_avg_word_len(self) -> float:
+        return abs(self.avg_word_len_txt_1() - self.avg_word_len_txt_2())
 
-    def shared_pos(self) -> int:
-        return len(func.intersect(self.data_1["pos"], self.data_2["pos"]))
-
-    def shared_lemma(self) -> int:
-        return len(func.intersect(self.data_1["lemma"], self.data_2["lemma"]))
-
-    def shared_proper_noun(self) -> int:
-        shrd_pos = func.intersect(self.data_1["pos"], self.data_2["pos"])
-        return len([word for word, tag in shrd_pos if tag.startswith("NNP")])
-
-    def diff_uppercase(self):
-        upper_1 = [1 for i in self.data_1["content"] if i.isupper()]
-        upper_2 = [1 for i in self.data_2["content"] if i.isupper()]
-        return abs(sum(upper_1) / len(self.data_1["tokens"]) - sum(upper_2) / len(self.data_2["tokens"]))
-
-    def diff_stopwords(self):
-        stops_1 = [token for token in self.data_1["tokens"] if token in stops]
-        stops_2 = [token for token in self.data_2["tokens"] if token in stops]
-        return abs(len(stops_1) / len(self.data_1["tokens"]) - len(stops_2) / len(self.data_2["tokens"]))
-
-    def diff_tokens(self):
-        return abs(len(self.data_1["tokens"]) - len(self.data_2["tokens"]))
