@@ -8,7 +8,7 @@ import os.path as osp
 if __name__ == '__main__':
     train_file = "..\\dataset\\train.csv"
     test_file = "..\\dataset\\test.csv"
-    idf_file = train_file = "..\\dataset\\inverse_doc_freq_test.csv"
+    idf_file = "..\\dataset\\inverse_doc_freq_test.csv"
     train_set = fmgmt.read_csv(train_file)
 
     result = []

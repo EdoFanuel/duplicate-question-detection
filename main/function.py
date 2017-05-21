@@ -73,7 +73,7 @@ def generate_idf(dest: str, corpus_blob):
     for sentence in corpus_blob:
         for word in sentence.words:
             print(len(inverse_index), word, n_containing(word, corpus_blob))
-    for word, freq in inverse_index:
+    for word, freq in inverse_index.items():
         inverse_doc_freq.append({
             "word": word,
             "freq": freq,
