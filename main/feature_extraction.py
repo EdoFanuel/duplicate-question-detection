@@ -1,8 +1,8 @@
 from collections import Counter
 import pandas as pd
 import math
-from textblob import TextBlob as tb
 import nltk
+from gensim import corpora, models
 from nltk.corpus import stopwords, wordnet
 from nltk.metrics import *
 from nltk.stem import WordNetLemmatizer
@@ -43,12 +43,9 @@ def token_distribution(corpus: list) -> list:
 
 
 class FeatureExtraction:
-    def __init__(self, text_1: str, text_2: str, corpus_blob: list):
+    def __init__(self, text_1: str, text_2: str):
         self.data_1 = FeatureExtraction.extract_basic_feature(text_1)
         self.data_2 = FeatureExtraction.extract_basic_feature(text_2)
-        self.blob_1 = tb(text_1)
-        self.blob_2 = tb(text_2)
-        self.corpus_blob = corpus_blob
 
     @staticmethod
     def extract_basic_feature(text: str) -> dict:
@@ -192,10 +189,7 @@ class FeatureExtraction:
     def shared_tf_idf(self) -> float:
         shrd_token = func.intersect(self.data_1["tokens"], self.data_2["tokens"])
         unique_token = set(self.data_1["tokens"] + self.data_2["tokens"])
-        shrd_tfidf = [func.tfidf(word, self.blob_1, self.corpus_blob) + func.tfidf(word, self.blob_2, self.corpus_blob)
-                      for word in shrd_token]
-        total_tfidf = [func.tfidf(word, self.blob_1, self.corpus_blob) + func.tfidf(word, self.blob_2, self.corpus_blob)
-                       for word in unique_token]
+
         return sum(shrd_tfidf) / sum(total_tfidf)
 
     # Part-of-speech related features
