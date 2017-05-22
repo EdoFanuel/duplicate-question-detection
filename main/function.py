@@ -3,18 +3,6 @@ import nltk
 from gensim import corpora, models
 
 
-def token_extraction(text_1: str, text_2: str, extract_method: callable):
-    token_1 = nltk.word_tokenize(text_1)
-    token_2 = nltk.word_tokenize(text_2)
-    return extract_method(token_1, token_2)
-
-
-def pos_tag_extraction(text_1: str, text_2: str, extract_method: callable):
-    pos_1 = nltk.pos_tag(nltk.word_tokenize(text_1))
-    pos_2 = nltk.pos_tag(nltk.word_tokenize(text_2))
-    return extract_method(pos_1, pos_2)
-
-
 def cosine_similarity(vector_1: list, vector_2: list) -> float:
     vect_product = [a * b for a, b in zip(vector_1, vector_2)]
     sq_vect_1 = [a ** 2 for a in vector_1]
@@ -52,17 +40,21 @@ def generate_tfidf(dictionary: corpora.Dictionary) -> models.TfidfModel:
 
 def generate_dictionary(corpus: list, token_generator: callable = None) -> corpora.Dictionary:
     if token_generator is None:
-        return corpora.Dictionary(nltk.word_tokenize(sentence) for sentence in corpus)
+        return corpora.Dictionary(word_tokenize(sentence) for sentence in corpus if isinstance(sentence, str))
     else:
         return corpora.Dictionary(token_generator(corpus))
 
 
 def generate_corpus_vector(text: str, dictionary: corpora.Dictionary, token_generator: callable = None) -> list:
     if token_generator is None:
-        return dictionary.doc2bow(nltk.word_tokenize(text))
+        return dictionary.doc2bow(word_tokenize(text))
     else:
         return dictionary.doc2bow(token_generator(text))
 
 
-def tf_idf(word, document, tf_idf) -> float:
-    pass  # TODO implement
+def word_tokenize(text: str) -> list:
+    try:
+        return nltk.word_tokenize(text.lower())
+    except TypeError:
+        print("Failed to tokenize {0}. Split by whitespace instead", text)
+        return text.lower().split()

@@ -26,22 +26,6 @@ def convert(treebank_tag: str) -> str:
         return wordnet.NOUN
 
 
-def word_distribution(corpus: list) -> list:
-    casted_series = pd.Series(corpus).astype(str)
-    words = (" ".join(casted_series)).lower().split()
-    counts = Counter(words)
-    result = {(word, count) for word, count in counts.items()}
-    return sorted(result, key=lambda x: x[1], reverse=True)
-
-
-def token_distribution(corpus: list) -> list:
-    casted_series = pd.Series(corpus).astype(str)
-    words = nltk.word_tokenize(" ".join(casted_series))
-    counts = Counter(words)
-    result = {(word, count) for word, count in counts.items()}
-    return sorted(result, key=lambda x: x[1], reverse=True)
-
-
 class FeatureExtraction:
     def __init__(self, text_1: str, text_2: str, dictionary: corpora.Dictionary, tfidf_model: models.TfidfModel):
         self.data_1 = FeatureExtraction.extract_basic_feature(text_1)
@@ -53,7 +37,7 @@ class FeatureExtraction:
     def extract_basic_feature(text: str) -> dict:
         result = {
             "content": text,
-            "tokens": nltk.word_tokenize(text)
+            "tokens": func.word_tokenize(text.lower())
         }
         result["pos"] = nltk.pos_tag(result["tokens"])
         result["lemma"] = [lemmatizer.lemmatize(word, pos=convert(tag)) for word, tag in result["pos"]]

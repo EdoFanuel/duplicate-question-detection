@@ -5,11 +5,11 @@ from main import function as funct
 from datetime import datetime as dt
 
 
-def read_csv(src_path):
+def read_csv(src_path) -> pd.DataFrame:
     return pd.read_csv(src_path)
 
 
-def write_csv(content, dest_folder: str, file_name: str, columns: list = None, with_index: bool = False):
+def write_csv(content, dest_folder: str, file_name: str, columns: list = None, with_index: bool = False) -> None:
     sub = pd.DataFrame(content, columns=columns)
     sub.to_csv(osp.join(dest_folder, file_name), index=with_index, encoding="utf-8")
 
