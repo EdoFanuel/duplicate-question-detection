@@ -43,9 +43,11 @@ def token_distribution(corpus: list) -> list:
 
 
 class FeatureExtraction:
-    def __init__(self, text_1: str, text_2: str):
+    def __init__(self, text_1: str, text_2: str, dictionary: corpora.Dictionary, tfidf_model: models.TfidfModel):
         self.data_1 = FeatureExtraction.extract_basic_feature(text_1)
         self.data_2 = FeatureExtraction.extract_basic_feature(text_2)
+        self.dictionary = dictionary
+        self.tfidf_model = tfidf_model
 
     @staticmethod
     def extract_basic_feature(text: str) -> dict:
@@ -188,9 +190,14 @@ class FeatureExtraction:
 
     def shared_tf_idf(self) -> float:
         shrd_token = func.intersect(self.data_1["tokens"], self.data_2["tokens"])
-        unique_token = set(self.data_1["tokens"] + self.data_2["tokens"])
 
-        return sum(shrd_tfidf) / sum(total_tfidf)
+        tfidf_1 = self.tfidf_model[self.dictionary.doc2bow(self.data_1["tokens"])]
+        tfidf_2 = self.tfidf_model[self.dictionary.doc2bow(self.data_2["tokens"])]
+
+        shared_dict_ids = [self.dictionary.token2id[token] for token in shrd_token]
+        shared_tfidf = [value for token_id, value in tfidf_1 + tfidf_2 if token_id in shared_dict_ids]
+        total_tfidf = [value for _, value in tfidf_1 + tfidf_2]
+        return sum(shared_tfidf) / sum(total_tfidf)
 
     # Part-of-speech related features
     def shared_pos(self) -> int:

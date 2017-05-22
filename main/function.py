@@ -1,8 +1,6 @@
 import math
 import nltk
 from gensim import corpora, models
-from main import fmgmt
-from datetime import datetime as dt
 
 
 def token_extraction(text_1: str, text_2: str, extract_method: callable):
@@ -48,12 +46,22 @@ def diff_by_list(x: list, y: list) -> dict:
     }
 
 
-def generate_tfidf(corpus: list, dictionary: object) -> None:
-    pass  # TODO implement
+def generate_tfidf(dictionary: corpora.Dictionary) -> models.TfidfModel:
+    return models.TfidfModel(dictionary= dictionary)
 
 
-def generate_dictionary(corpus: list, dict_path: str) -> None:
-    pass  # TODO implement
+def generate_dictionary(corpus: list, token_generator: callable = None) -> corpora.Dictionary:
+    if token_generator is None:
+        return corpora.Dictionary(nltk.word_tokenize(sentence) for sentence in corpus)
+    else:
+        return corpora.Dictionary(token_generator(corpus))
+
+
+def generate_corpus_vector(text: str, dictionary: corpora.Dictionary, token_generator: callable = None) -> list:
+    if token_generator is None:
+        return dictionary.doc2bow(nltk.word_tokenize(text))
+    else:
+        return dictionary.doc2bow(token_generator(text))
 
 
 def tf_idf(word, document, tf_idf) -> float:
