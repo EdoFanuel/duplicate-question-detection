@@ -1,5 +1,3 @@
-from collections import Counter
-import pandas as pd
 import math
 import nltk
 from gensim import corpora, models
@@ -43,9 +41,9 @@ class FeatureExtraction:
         result["lemma"] = [lemmatizer.lemmatize(word, pos=convert(tag)) for word, tag in result["pos"]]
         return result
 
-    def generate_features(self, id: int, is_duplicate: int) -> dict:
+    def generate_features(self, data_id: int, is_duplicate: int) -> dict:
         result = {
-            "id": id,
+            "id": data_id,
             "is_duplicate": is_duplicate,
             "len_text_1": self.len_text_1(),
             "len_text_2": self.len_text_2(),
@@ -79,7 +77,6 @@ class FeatureExtraction:
             "diff_avg_word_len": self.diff_avg_word_len()
         }
         return result
-
 
     # Text-related features
     def len_text_1(self) -> int:
@@ -232,4 +229,3 @@ class FeatureExtraction:
 
     def diff_avg_word_len(self) -> float:
         return abs(self.avg_word_len_txt_1() - self.avg_word_len_txt_2())
-

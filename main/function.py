@@ -35,7 +35,7 @@ def diff_by_list(x: list, y: list) -> dict:
 
 
 def generate_tfidf(dictionary: corpora.Dictionary) -> models.TfidfModel:
-    return models.TfidfModel(dictionary= dictionary)
+    return models.TfidfModel(dictionary=dictionary)
 
 
 def generate_dictionary(corpus: list, token_generator: callable = None) -> corpora.Dictionary:
