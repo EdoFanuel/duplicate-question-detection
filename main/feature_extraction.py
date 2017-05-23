@@ -34,8 +34,8 @@ class FeatureExtraction:
     @staticmethod
     def extract_basic_feature(text: str) -> dict:
         result = {
-            "content": text,
-            "tokens": func.word_tokenize(text.lower())
+            "content": str(text),
+            "tokens": func.word_tokenize(str(text).lower())
         }
         result["pos"] = nltk.pos_tag(result["tokens"])
         result["lemma"] = [lemmatizer.lemmatize(word, pos=convert(tag)) for word, tag in result["pos"]]
@@ -175,7 +175,7 @@ class FeatureExtraction:
         tfidf_1 = self.tfidf_model[self.dictionary.doc2bow(self.data_1["tokens"])]
         tfidf_2 = self.tfidf_model[self.dictionary.doc2bow(self.data_2["tokens"])]
 
-        shared_dict_ids = [self.dictionary.token2id[token] for token in shrd_token]
+        shared_dict_ids = [self.dictionary.token2id[token] for token in shrd_token if token in self.dictionary.token2id]
         shared_tfidf = [value for token_id, value in tfidf_1 + tfidf_2 if token_id in shared_dict_ids]
         total_tfidf = [value for _, value in tfidf_1 + tfidf_2]
         return sum(shared_tfidf) / sum(total_tfidf)

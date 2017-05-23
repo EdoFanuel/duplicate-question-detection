@@ -1,15 +1,16 @@
 import pandas as pd
+import numpy as np
 import os.path as osp
 from gensim import corpora
 from main import function as funct
 from datetime import datetime as dt
 
 
-def read_csv(src_path) -> pd.DataFrame:
-    return pd.read_csv(src_path)
+def read_csv(src_path: str, data_types: dict = None) -> pd.DataFrame:
+    return pd.read_csv(src_path, dtype=data_types)
 
 
-def write_csv(content, dest_folder: str, file_name: str, columns: list = None, with_index: bool = False) -> None:
+def write_csv(content: list, dest_folder: str, file_name: str, columns: list = None, with_index: bool = False) -> None:
     sub = pd.DataFrame(content, columns=columns)
     sub.to_csv(osp.join(dest_folder, file_name), index=with_index, encoding="utf-8")
 

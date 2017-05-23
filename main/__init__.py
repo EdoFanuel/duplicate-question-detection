@@ -7,7 +7,7 @@ if __name__ == '__main__':
     train_file = "..\\dataset\\train.csv"
     test_file = "..\\dataset\\test.csv"
     dict_file = "..\\feature\\quora_trainset.dict"
-    train_set = fmgmt.read_csv(train_file)
+    train_set = fmgmt.read_csv(train_file, {"question1": str, "question2": str, "is_duplicate": int})
 
     result = []
     print("Start collecting corpus blob for {0} documents".format(len(train_set)))
@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
     i = 0
     for index, train_data in train_set.iterrows():
-        q1, q2, is_duplicate = train_data["question_1"], train_data["question_2"], train_data["is_duplicate"]
+        q1, q2, is_duplicate = train_data["question1"], train_data["question2"], train_data["is_duplicate"]
         feature = f_ext.FeatureExtraction(q1, q2, dictionary, tfidf_model)
         i += 1
         data = feature.generate_features(i, is_duplicate)
