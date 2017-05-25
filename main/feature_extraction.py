@@ -41,6 +41,40 @@ class FeatureExtraction:
         result["lemma"] = [lemmatizer.lemmatize(word, pos=convert(tag)) for word, tag in result["pos"]]
         return result
 
+    @staticmethod
+    def get_feature_fields() -> list:
+        return [
+            "len_text_1",
+            "len_text_2",
+            "len_diff",
+            "len_char_1",
+            "len_char_2",
+            "diff_char",
+            "len_upper_txt_1",
+            "len_upper_txt_2",
+            "diff_upper",
+            "norm_levenshtein",
+            "len_token_1",
+            "len_token_2",
+            "shared_token",
+            "shared_token_sqrt",
+            "diff_token",
+            "token_hamming",
+            "token_dist",
+            "len_stopword_1",
+            "len_stopword_2",
+            "shared_2gram",
+            "shared_tfidf",
+            "shared_pos",
+            "shared_nnp",
+            "pos_dist",
+            "shared_lemma",
+            "cosine_lemma",
+            "avg_word_1",
+            "avg_word_2",
+            "diff_avg_word_len"
+        ]
+
     def generate_features(self, data_id: int, is_duplicate: int) -> dict:
         result = {
             "id": data_id,

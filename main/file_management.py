@@ -10,13 +10,15 @@ def read_csv(src_path: str, data_types: dict = None) -> pd.DataFrame:
     return pd.read_csv(src_path, dtype=data_types)
 
 
-def write_csv(content: list, dest_folder: str, file_name: str, columns: list = None, with_index: bool = False) -> None:
+def write_csv(content: list, file_name: str, columns: list = None, with_index: bool = False) -> pd.DataFrame:
     sub = pd.DataFrame(content, columns=columns)
-    sub.to_csv(osp.join(dest_folder, file_name), index=with_index, encoding="utf-8")
+    sub.to_csv(file_name, index=with_index, encoding="utf-8")
+    return sub
 
 
 def reload_dictionary(file_path: str, corpus: list) -> corpora.Dictionary:
     if osp.isfile(file_path):
+        print("Loading Dictionary from {0}".format(file_path))
         return corpora.Dictionary.load(file_path)
     else:
         start_time = dt.now()
@@ -26,3 +28,6 @@ def reload_dictionary(file_path: str, corpus: list) -> corpora.Dictionary:
         elapsed_time = dt.now() - start_time
         print("Dictionary generated in {0} seconds, located at {1}".format(elapsed_time.total_seconds(), file_path))
         return dictionary
+
+
+
