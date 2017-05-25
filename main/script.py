@@ -19,13 +19,15 @@ def generate_feature(data_file: str, dict_file: str, feature_file: str, training
         train_set = train_set[start_index: min(end_index, len(train_set))]
 
     for train_data in train_set.iterrows():
-        q1, q2, test_id = train_data["question1"], train_data["question2"], train_data["id"]
+        q1, q2 = train_data["question1"], train_data["question2"]
         feature = f_ext.FeatureExtraction(q1, q2, dictionary, tfidf_model)
         i += 1
         data = feature.generate_features()
-        data["id"] = test_id
         if training_mode:
             data["is_duplicate"] = train_data["is_duplicate"]
+            data["id"] = train_data["id"]
+        else:
+            data["id"] = train_data["test_id"]
         result.append(data)
         if i % 100 == 0:
             print("\tProgress: {0} / {1}".format(i, len(train_set)))
