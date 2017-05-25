@@ -28,6 +28,3 @@ def reload_dictionary(file_path: str, corpus: list) -> corpora.Dictionary:
         elapsed_time = dt.now() - start_time
         print("Dictionary generated in {0} seconds, located at {1}".format(elapsed_time.total_seconds(), file_path))
         return dictionary
-
-
-

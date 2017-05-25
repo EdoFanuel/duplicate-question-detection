@@ -75,10 +75,8 @@ class FeatureExtraction:
             "diff_avg_word_len"
         ]
 
-    def generate_features(self, data_id: int, is_duplicate: int) -> dict:
+    def generate_features(self) -> dict:
         result = {
-            "id": data_id,
-            "is_duplicate": is_duplicate,
             "len_text_1": self.len_text_1(),
             "len_text_2": self.len_text_2(),
             "len_diff": self.len_diff(),
