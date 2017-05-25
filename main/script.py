@@ -16,9 +16,9 @@ def generate_feature(data_file: str, dict_file: str, feature_file: str, training
 
     i = 0
     if start_index is not None and end_index is not None:
-        train_set = train_set[start_index: min(end_index, len(train_set))]
+        train_set = pd.DataFrame(train_set[start_index: min(end_index, len(train_set))])
 
-    for train_data in train_set.iterrows():
+    for index, train_data in train_set.iterrows():
         q1, q2 = train_data["question1"], train_data["question2"]
         feature = f_ext.FeatureExtraction(q1, q2, dictionary, tfidf_model)
         i += 1

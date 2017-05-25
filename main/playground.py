@@ -9,8 +9,9 @@ entries_per_file = 10000
 total_file = round(math.ceil(2345796 / entries_per_file))
 for i in range(0, total_file):
     print("Starting Batch {0} / {1}".format(i + 1, total_file))
-    test_feature_file = "..\\feature\\test_feature_p{0}.csv".format(i + 1)
+    test_feature_file = "..\\feature-partial\\test_feature_p{0}.csv".format(i + 1)
     if osp.isfile(test_feature_file):
+        print("Batch already exists, skipping to the next batch")
         continue
     else:
         test_feature = script.generate_feature(
