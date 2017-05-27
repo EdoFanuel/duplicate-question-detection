@@ -8,7 +8,8 @@ import main.script as script
 
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
-
+from sklearn.preprocessing import StandardScaler
+from sklearn.neural_network import MLPClassifier
 
 if __name__ == '__main__':
     train_file = "..\\dataset\\train.csv"
@@ -27,18 +28,25 @@ if __name__ == '__main__':
     else:
         train_feature = script.generate_feature(train_file, train_dict_file, train_feature_file, training_mode=True)
 
-    # Initialize random forest
-    features = ["cosine_lemma", "norm_levenshtein", "shared_2gram", "shared_tfidf", "shared_token"]
-    print("Loading Random Forest...")
-    clf = RandomForestClassifier()
-    clf.fit(train_feature[features], train_feature["is_duplicate"])
-
     # Generating test features
     print("Loading test features...")
     if osp.isfile(test_feature_file):
         test_feature = fmgmt.read_csv(test_feature_file)
     else:
         test_feature = script.generate_feature(test_file, test_dict_file, test_feature_file, training_mode=False)
+
+    features = f_ext.FeatureExtraction.get_feature_fields()
+    # Preprocessing
+    print("Start preprocessing")
+    scaler = StandardScaler()
+    scaler.fit(train_feature[features])
+    scaled_train = scaler.transform(train_feature[features])
+    scaled_test = scaler.transform(test_feature[features])
+
+    # Initialize machine learning
+    print("Loading Machine Learning")
+    clf = MLPClassifier(hidden_layer_sizes=(100, 100, 100), max_iter=1000, activation="logistic")
+    clf.fit(train_feature[features], train_feature["is_duplicate"])
 
     # Find result
     print("Predicting values...")
@@ -50,6 +58,3 @@ if __name__ == '__main__':
 
     # Save result
     final_result.to_csv(file_name, index=False)
-    print("Important features:")
-    for feature, importance in sorted(list(zip(features, clf.feature_importances_)), key=lambda x: x[1], reverse=True):
-        print(feature, importance)
