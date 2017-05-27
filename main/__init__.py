@@ -21,16 +21,20 @@ if __name__ == '__main__':
     file_name = "..\\result\\{0}.csv".format(dt.now().strftime("%Y-%m-%d %H-%M-%S"))
 
     # Generating training features
+    print("Loading training features...")
     if osp.isfile(train_feature_file):
         train_feature = fmgmt.read_csv(train_feature_file)
     else:
         train_feature = script.generate_feature(train_file, train_dict_file, train_feature_file, training_mode=True)
 
     # Initialize random forest
-    clf = RandomForestClassifier(max_depth=5)
-    clf.fit(train_feature[f_ext.FeatureExtraction.get_feature_fields()], train_feature["is_duplicate"])
+    features = ["cosine_lemma", "norm_levenshtein", "shared_2gram", "shared_tfidf", "shared_token"]
+    print("Loading Random Forest...")
+    clf = RandomForestClassifier()
+    clf.fit(train_feature[features], train_feature["is_duplicate"])
 
     # Generating test features
+    print("Loading test features...")
     if osp.isfile(test_feature_file):
         test_feature = fmgmt.read_csv(test_feature_file)
     else:
@@ -38,11 +42,14 @@ if __name__ == '__main__':
 
     # Find result
     print("Predicting values...")
-    preds = clf.predict_proba(test_feature[f_ext.FeatureExtraction.get_feature_fields()])
+    predictions = clf.predict_proba(test_feature[features])
     print("Saving result")
     final_result = pd.DataFrame()
     final_result["test_id"] = test_feature["id"]
-    final_result["is_duplicate"] = [pred[1] for pred in preds]
+    final_result["is_duplicate"] = [value[1] for value in predictions]
 
     # Save result
     final_result.to_csv(file_name, index=False)
+    print("Important features:")
+    for feature, importance in sorted(list(zip(features, clf.feature_importances_)), key=lambda x: x[1], reverse=True):
+        print(feature, importance)
