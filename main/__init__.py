@@ -47,8 +47,8 @@ if __name__ == '__main__':
     scaled_test = scaler.transform(test_feature[features])
 
     # Initialize machine learning
-    print("Loading learning system: Artifical Neural Network")
-    clf = MLPClassifier(hidden_layer_sizes=(100, 100, 100), max_iter=1000, activation="logistic")
+    print("Loading learning system: Radial Basis SVM")
+    clf = SVC(verbose=True, probability=True, tol=1e-5, decision_function_shape="ovr")
     clf.fit(train_feature[features], train_feature["is_duplicate"])
 
     # Find result
