@@ -7,9 +7,12 @@ import main.function as funct
 import main.script as script
 
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.neural_network import MLPClassifier
+from sklearn.svm import NuSVC, SVC, LinearSVC
+from sklearn.naive_bayes import GaussianNB, MultinomialNB, BernoulliNB
+from sklearn.linear_model import LinearRegression, LogisticRegression, SGDClassifier
 
 if __name__ == '__main__':
     train_file = "..\\dataset\\train.csv"
@@ -37,14 +40,14 @@ if __name__ == '__main__':
 
     features = f_ext.FeatureExtraction.get_feature_fields()
     # Preprocessing
-    print("Start preprocessing")
+    print("Start pre-processing...")
     scaler = StandardScaler()
     scaler.fit(train_feature[features])
     scaled_train = scaler.transform(train_feature[features])
     scaled_test = scaler.transform(test_feature[features])
 
     # Initialize machine learning
-    print("Loading Machine Learning")
+    print("Loading learning system: Artifical Neural Network")
     clf = MLPClassifier(hidden_layer_sizes=(100, 100, 100), max_iter=1000, activation="logistic")
     clf.fit(train_feature[features], train_feature["is_duplicate"])
 
