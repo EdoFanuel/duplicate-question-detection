@@ -8,11 +8,13 @@ import main.script as script
 
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import NuSVC, SVC, LinearSVC
 from sklearn.naive_bayes import GaussianNB, MultinomialNB, BernoulliNB
 from sklearn.linear_model import LinearRegression, LogisticRegression, SGDClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier, ExtraTreeClassifier
 
 if __name__ == '__main__':
     train_file = "..\\dataset\\train.csv"
@@ -39,6 +41,18 @@ if __name__ == '__main__':
         test_feature = script.generate_feature(test_file, test_dict_file, test_feature_file, training_mode=False)
 
     features = f_ext.FeatureExtraction.get_feature_fields()
+    # features = [
+    #     "shared_tfidf",
+    #     "cosine_lemma",
+    #     "shared_2gram",
+    #     "norm_levenshtein",
+    #     "shared_token",
+    #     "shared_token_sqrt",
+    #     "shared_lemma",
+    #     "token_hamming",
+    #     "pos_dist"
+    # ]
+
     # Preprocessing
     print("Start pre-processing...")
     scaler = StandardScaler()
@@ -47,13 +61,14 @@ if __name__ == '__main__':
     scaled_test = scaler.transform(test_feature[features])
 
     # Initialize machine learning
-    print("Loading learning system: Radial Basis SVM")
-    clf = SVC(verbose=True, probability=True, tol=1e-5, decision_function_shape="ovr")
-    clf.fit(train_feature[features], train_feature["is_duplicate"])
+    print("Loading learning system: Multilayer Perceptron")
+    clf = MLPClassifier(hidden_layer_sizes=(100, 75, 50, 25), max_iter=1000, verbose=True)
+    clf.fit(scaled_train, train_feature["is_duplicate"])
+    print("Self-Accuracy: ", clf.score(scaled_train, train_feature["is_duplicate"]))
 
     # Find result
     print("Predicting values...")
-    predictions = clf.predict_proba(test_feature[features])
+    predictions = clf.predict_proba(scaled_test)
     print("Saving result")
     final_result = pd.DataFrame()
     final_result["test_id"] = test_feature["id"]
